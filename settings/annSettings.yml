@@ -1,0 +1,7 @@
+generator:
+         name                : Generator
+         colorDescriptorSize : 10
+         noiseSize           : 100
+
+discriminator:
+         name                : Discriminator 

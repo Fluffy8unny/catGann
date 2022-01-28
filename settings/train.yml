@@ -1,0 +1,6 @@
+epochs    : 250
+batchSize : 20
+
+output              : C:\dev\output
+checkpointFrequency : 10
+networkName         : cat_
