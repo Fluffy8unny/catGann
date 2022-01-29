@@ -26,7 +26,7 @@ def loadImage(path,imageSize):
     loadedImg = cv2.imread(path)
     resized   = resize(loadedImg,imageSize)
 
-    return resized.astype(np.float32) / 255.0
+    return resized.astype(np.float32) / 127.5 - 1.0
 
 def checkSuffix(path):
     match (res := re.match( r".*(\.[a-z]+)$", path)):
@@ -48,9 +48,9 @@ def imageGenerator( batchSize, imageSize, path ):
         for i in np.arange(batchSize,paths.shape[0],batchSize,dtype=np.int):
             wait(futures)
 
-            images    = [ f.result()             for f   in futures  ]
-            meanData  = [ calcColorDescriptor(img)     for img in images   ]
-            inputData = [ getInputFromImage(img) for img in meanData ]
+            images    = [ f.result()               for f   in futures  ]
+            meanData  = [ calcColorDescriptor(img) for img in images   ]
+            inputData = [ getInputFromImage(img)   for img in meanData ]
 
             futures   = getFutures(i)
             yield images, meanData, inputData

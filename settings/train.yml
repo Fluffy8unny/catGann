@@ -1,8 +1,8 @@
-epochs    : 250
+epochs    : 5000
 batchSize : 20
 
 output              : C:\dev\output
 logDir              : C:\dev\output\logs
 checkpointFrequency : 10
-networkName         : cat_
+networkName         : cat_64_lessNoise
 
