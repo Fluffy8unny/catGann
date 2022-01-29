@@ -1,4 +1,3 @@
 path        : C:\dev\CAT_00
-suffix      : [ .jpg, .png, .gif]
-description : fucking cats m8
 testImage   : C:\dev\CAT_00\00000001_000.jpg
+suffix      : [ .jpg, .png, .gif]

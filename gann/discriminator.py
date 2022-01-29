@@ -6,8 +6,7 @@ from gann.optimizers import crossEntropy
 from settings import settings
 
 def makeDiscriminatorModel():
-    imgSize               = settings.img["imageSize"]
-    channels              = settings.img["channels"]
+    imgSize,channels  = settings.img["imageSize"][:2],settings.img["imageSize"][2]
 
     model = tf.keras.Sequential()
     model.add( layers.Conv2D( 64, (5, 5), strides = (2, 2), padding='same',

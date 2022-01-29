@@ -1,7 +1,7 @@
 from time import time
 
 class Timer:
-	def __init__(self,message,addParam):
+	def __init__(self,message,addParam = {}):
 		self.message  = message
 		self.addParam = addParam
 	

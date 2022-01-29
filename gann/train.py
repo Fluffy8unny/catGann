@@ -2,15 +2,16 @@ import os
 from   time import time
 
 import tensorflow as tf
-
-from gann.generator     import makeGeneratorModel, generatorLoss
 from gann.discriminator import makeDiscriminatorModel, discriminatorLoss
+from gann.generator     import makeGeneratorModel, generatorLoss
+from gann.logging       import gannLogger
 from gann.optimizers    import generatorOptimizer, discriminatorOptimizer
-from gann.vis           import getVisualizer
+from gann.vis           import getImageWriter
 
 from settings import settings
 
-from util.util import Timer
+from util.util         import Timer
+from util.checkFolders import checkFolders
 
 generator     = makeGeneratorModel()
 discriminator = makeDiscriminatorModel()
@@ -30,6 +31,8 @@ def trainStep(images, meanData, inputData):
 
       generatorOptimizer.apply_gradients(     zip( gradientsGenerator,     generator.trainable_variables))
       discriminatorOptimizer.apply_gradients( zip( gradientsDiscriminator, discriminator.trainable_variables))
+      return {"discriminatorLoss": discLoss, "generatorLoss":genLoss}
+
 
 def getCheckpoint():
   checkpointDir    = settings.train["output"]
@@ -41,15 +44,26 @@ def getCheckpoint():
                               discriminator           = discriminator),checkpointPrefix
 
 def train(dataset, epochs = settings.train["epochs"]):
-  visualizer         = getVisualizer()
+  logFolder = "".join([ settings.train["logDir"],
+                        os.path.sep,
+                        settings.train["networkName"]])
+  
+  checkFolders([  settings.train["output"]
+                 ,logFolder  
+               ])
   checkpoint, prefix = getCheckpoint()
+  logger             = gannLogger( logFolder )
+  imageLogger        = getImageWriter(logFolder )
 
   for epoch in range(epochs):
+    dataset.shuffle(1000)
     with Timer('Time for epoch {epoch} is {t} sec',{"epoch":epoch}):
       start = time()
       for images, meanData, inputData in dataset:
-        trainStep(images, meanData, inputData)
+        losses = trainStep(images, meanData, inputData)
+        logger.updateLosses(losses)
 
     if epoch % settings.train["checkpointFrequency"] == 0:
-      visualizer(generator,epoch)
-      checkpoint.save(file_prefix = prefix)
+      logger.dumpLosses( epoch )
+      imageLogger(generator,epoch)
+      checkpoint.save( file_prefix = prefix) 

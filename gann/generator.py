@@ -4,7 +4,7 @@ from tensorflow.keras import layers
 
 from gann.optimizers import crossEntropy
 
-from image.meanColors import calcMeanImage
+from image.meanColors import calcColorDescriptor
 from settings import settings
 
 def addBlock(model,filterSize,depth,upsampling=1):
@@ -15,8 +15,8 @@ def addBlock(model,filterSize,depth,upsampling=1):
 def makeGeneratorModel():
     flattendSize          = settings.ann["generator"]["colorDescriptorSize"]**2
     noiseSize             = settings.ann["generator"]["noiseSize"]
-    imgSize               = settings.img["imageSize"]
-    channels              = settings.img["channels"]
+    imgSize,channels      = settings.img["imageSize"][:2],settings.img["imageSize"][2]
+
 
     getDownsampledImgSize = lambda ds : [ s  //  (2**ds) for s in imgSize]
     sizeProduct           = lambda im : im[0]*im[1]
@@ -42,7 +42,7 @@ def makeGeneratorModel():
 def generatorLoss(discOutput, genOutput, inputDistribution):
     discOutput      = crossEntropy(tf.ones_like(discOutput), discOutput)
 
-    outDistribution = np.vstack(list( map( calcMeanImage,genOutput.numpy() ) ))
+    outDistribution = np.vstack(list( map( calcColorDescriptor,genOutput.numpy() ) ))
     colorEntropy    = crossEntropy(outDistribution, inputDistribution)
 
     return discOutput + colorEntropy

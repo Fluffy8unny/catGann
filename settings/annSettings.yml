@@ -1,7 +1,7 @@
 generator:
          name                : Generator
-         colorDescriptorSize : 10
-         noiseSize           : 100
+         colorDescriptorSize : 5
+         noiseSize           : 10
 
 discriminator:
          name                : Discriminator 

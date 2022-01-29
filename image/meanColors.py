@@ -15,8 +15,11 @@ def calcMeanImage(img):
 		case _:
 			...
 
-	return cv2.resize(img,[descriptorSize,descriptorSize]).flatten()
+	return cv2.resize(img,[descriptorSize,descriptorSize])
 
+def calcColorDescriptor(img):
+	return calcMeanImage(img).flatten()
+	
 def getInputFromImage(meanImage):
 	noiseSize      = settings.ann["generator"]["noiseSize"]
 
