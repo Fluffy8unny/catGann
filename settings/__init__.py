@@ -14,7 +14,6 @@ basePath     = r"settings"
 makeAbsolute = lambda x : f"{basePath}{sep}{x}"
 
 settings = Settings(  ann   = makeAbsolute("annSettings.yml")
-					, img   = makeAbsolute("imageSettings.yml") 
 					, ds    = makeAbsolute("dataset.yml")
 					, train = makeAbsolute("train.yml")
 					)

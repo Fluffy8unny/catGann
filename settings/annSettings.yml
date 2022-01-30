@@ -1,7 +1,10 @@
 generator:
-         name                : Generator
-         colorDescriptorSize : 5
-         noiseSize           : 5
+         name                   : Generator
+         colorDescriptorSize    : [4,4,3]
+         inputChannelMultiplier : 16
+         convLayerDepth         : [  64,   128,  256,  128,   64]       
+         filterSize             : [[5,5],[5,5],[5,5],[5,5],[5,5]]    
+         upsamplingPerLayer     : [[2,2],[2,2],[2,2],[2,2],[2,2]]          
 
 discriminator:
          name                : Discriminator 

@@ -4,5 +4,4 @@ batchSize : 20
 output              : C:\dev\output
 logDir              : C:\dev\output\logs
 checkpointFrequency : 10
-networkName         : cat_64_lessNoise
-
+networkName         : cat_128_TEST2

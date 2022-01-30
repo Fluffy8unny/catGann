@@ -1,7 +1,12 @@
 import cv2
 import numpy as np
+import tensorflow as tf
 
 from settings import settings
+
+def calcMeanImageTF(img):
+	descriptorSize   = settings.ann["generator"]["colorDescriptorSize"]
+	return tf.image.resize(img, descriptorSize[:2])
 
 def calcMeanImage(img):
 	descriptorSize   = settings.ann["generator"]["colorDescriptorSize"]
@@ -15,15 +20,8 @@ def calcMeanImage(img):
 		case _:
 			...
 
-	return cv2.resize(img,[descriptorSize,descriptorSize])
+	return cv2.resize(img,descriptorSize[:2])
 
 def calcColorDescriptor(img):
 	return calcMeanImage(img).flatten()
 	
-def getInputFromImage(meanImage):
-	noiseSize      = settings.ann["generator"]["noiseSize"]
-
-	inp            = np.hstack( [ meanImage
-						 		 ,np.random.rand(noiseSize).astype(np.float32)
-						 		  ])
-	return inp

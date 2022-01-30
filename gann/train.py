@@ -9,7 +9,7 @@ from gann.discriminator import makeDiscriminatorModel, discriminatorLoss
 from gann.generator     import makeGeneratorModel, generatorLoss
 from gann.logging       import gannLogger
 from gann.optimizers    import generatorOptimizer, discriminatorOptimizer
-from gann.vis           import getImageWriter
+from gann.vis           import getImageWriter,plotModelGraph
 
 from settings import settings
 
@@ -18,10 +18,10 @@ from util.util         import Timer,addFolderToPath,checkFolders
 generator     = makeGeneratorModel()
 discriminator = makeDiscriminatorModel()
 
-def trainStep(images, meanData, inputData):
+@tf.function
+def trainStep(images, meanData):
     with tf.GradientTape() as genTape, tf.GradientTape() as discTape:
-      generatedImage = generator( inputData, training = True )
-
+      generatedImage = generator( meanData, training = True )
       discReal = discriminator( augmentRandomly(images), training = True)
       discFake = discriminator( generatedImage,          training = True)
 
@@ -36,7 +36,7 @@ def trainStep(images, meanData, inputData):
       return {"discriminatorLoss": discLoss, "generatorLoss":genLoss}
 
 
-def getCheckpoint(checkpointDir):
+def getCheckpoint( checkpointDir ):
   checkpointPrefix = os.path.join( checkpointDir, "ckpt")
 
   return tf.train.Checkpoint( generatorOptimizer      = generatorOptimizer,
@@ -45,30 +45,33 @@ def getCheckpoint(checkpointDir):
                               discriminator           = discriminator,
                               step                    = tf.Variable(1)),checkpointPrefix
 
-def train(dataset, epochs = settings.train["epochs"], continueTraining = True ):
+def train( dataset, epochs = settings.train["epochs"], continueTraining = True ):
   logFolder,checkpointFolder  = [addFolderToPath(p,settings.train["networkName"]) for p in [ settings.train["output"],
                                                                                              settings.train["logDir"]]]   
   checkFolders( [logFolder, checkpointFolder] )
-  checkpoint, prefix = getCheckpoint(checkpointFolder)
-  logger             = gannLogger( logFolder )
+  checkpoint, prefix = getCheckpoint( checkpointFolder )
+  lossLogger         = gannLogger( logFolder )
   imageLogger        = getImageWriter(logFolder )
 
+  discInput,genInput = next(iter(dataset))
+  [ plotModelGraph(n,m,i,logFolder) for n,m,i in zip( ["generator","discriminator"],
+                                                       [generator, discriminator],
+                                                       [genInput,discInput])]
   if continueTraining:
        checkpoint.restore(tf.train.latest_checkpoint(checkpointFolder))
- 
+
   for _ in range(epochs):
     epoch = int(checkpoint.step)
 
-    dataset.shuffle(1000)
     with Timer('Time for epoch {epoch} is {t} sec',{"epoch":epoch}):
         start = time()
-        for images, meanData, inputData in dataset:
-            losses = trainStep(images, meanData, inputData)
-            logger.updateLosses(losses)
+        for images, meanData in dataset:
+            losses = trainStep(images, meanData)
+            lossLogger.updateLosses(losses)
 
     if epoch % settings.train["checkpointFrequency"] == 0:
-        logger.dumpLosses( epoch )
-        imageLogger(generator,epoch)
+        lossLogger.dumpLosses( epoch )
+        imageLogger( generator, epoch )
         checkpoint.save( file_prefix = prefix) 
 
     checkpoint.step.assign_add(1)

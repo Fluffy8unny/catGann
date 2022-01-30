@@ -3,10 +3,11 @@ from tensorflow.keras import layers
 
 from gann.optimizers import crossEntropy
 
-from settings import settings
+from util.util import getImageSize
 
 def makeDiscriminatorModel():
-    imgSize,channels  = settings.img["imageSize"][:2],settings.img["imageSize"][2]
+    imageSize         = getImageSize()
+    imgSize,channels  = imageSize[:2],imageSize[2]
 
     model = tf.keras.Sequential()
     model.add( layers.Conv2D( 64, (5, 5), strides = (2, 2), padding='same',

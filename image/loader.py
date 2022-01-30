@@ -8,8 +8,9 @@ import numpy as np
 import tensorflow as tf
 
 from concurrent.futures import ThreadPoolExecutor,wait
-from image.meanColors import calcColorDescriptor, getInputFromImage
+from image.meanColors import calcMeanImage 
 from settings import settings
+from util.util import getImageSize
 
 def getSlices(off,out):
     return [slice(i,i+j) for i,j in zip(off,out)]
@@ -49,22 +50,19 @@ def imageGenerator( batchSize, imageSize, path ):
             wait(futures)
 
             images    = [ f.result()               for f   in futures  ]
-            meanData  = [ calcColorDescriptor(img) for img in images   ]
-            inputData = [ getInputFromImage(img)   for img in meanData ]
+            meanData  = [ calcMeanImage(img) for img in images   ]
 
             futures   = getFutures(i)
-            yield images, meanData, inputData
+            yield images, meanData
 
 def getDataset( batchSize, path):
-    imgSize, channels  = settings.img["imageSize"][:2],settings.img["imageSize"][2]
-
-    descSize  = channels * ( settings.ann["generator"]["colorDescriptorSize"] ** 2 )
-    noiseSize = settings.ann["generator"]["noiseSize"] 
+    imageSize          = getImageSize()
+    imgSize, channels  = imageSize[:2],imageSize[2]
+    descSize           = settings.ann["generator"]["colorDescriptorSize"]
 
     return tf.data.Dataset.from_generator(
                                             lambda : imageGenerator( batchSize, imgSize, path ),
-                                            output_types  = ( tf.float32, tf.float32, tf.float32),
+                                            output_types  = ( tf.float32, tf.float32 ),
                                             output_shapes = ( [batchSize, *imgSize, channels],
-                                                              [batchSize, descSize],
-                                                              [batchSize, descSize + noiseSize] )
+                                                              [batchSize, *descSize] )
                                          )
